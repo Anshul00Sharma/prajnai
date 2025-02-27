@@ -181,3 +181,43 @@ Remember to update this specification as new patterns or requirements emerge.
 - this is just to show no edit button needed
 - follow the color and design of the other components
 - the card will have a delete button on the top right corner
+
+# Notion like components
+
+## these are the components that will be used to create a notes page
+
+each of these component should have 2 states Edit and View, these, all of these components
+can only be vertically stacked on to each other
+
+components like un-order list and order list should have sub components to handle list items
+
+- heading 1
+- heading 2
+- paragraph
+- un-order list
+  - un-order list item
+- order list
+  - order list item
+- Image
+- code block
+
+Page Structure
+
+- Block
+  - heading 1
+  - Sub-Block
+- Sub-Block
+  - heading 2
+  - paragraph
+    or
+  - heading 2
+  - un-order list
+    or
+  - heading 2
+  - order list
+    or
+  - heading 2
+  - Image
+    or
+  - heading 2
+  - code block

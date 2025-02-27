@@ -31,16 +31,6 @@ export function NavBar() {
             >
               Topic
             </Link>
-            <Link
-              href="/notion-page"
-              className={`px-6 py-2 rounded-full transition-all ${
-                pathname === "/notion-page"
-                  ? "bg-theme-light text-theme-primary shadow-md scale-105"
-                  : "text-theme-light hover:bg-theme-secondary/20"
-              }`}
-            >
-              Notion
-            </Link>
           </div>
         </nav>
       </div>
