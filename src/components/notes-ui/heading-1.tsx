@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { FaHeading } from "react-icons/fa";
 import NoteBlock from "./note-block";
 
 interface Heading1Props {
   id: string;
+  isEditing: boolean;
   initialContent?: string;
   onDelete?: () => void;
   onContentChange?: (content: string) => void;
@@ -13,12 +13,12 @@ interface Heading1Props {
 
 export default function Heading1({
   id,
+  isEditing,
   initialContent = "Heading 1",
   onDelete,
   onContentChange,
 }: Heading1Props) {
   const [content, setContent] = useState(initialContent);
-  const [isEditing, setIsEditing] = useState(false);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newContent = e.target.value;
@@ -27,12 +27,7 @@ export default function Heading1({
   };
 
   return (
-    <NoteBlock
-      id={id}
-      type="Heading 1"
-      icon={<FaHeading size={16} />}
-      onDelete={onDelete}
-    >
+    <NoteBlock id={id} type="Heading 1" onDelete={onDelete}>
       {isEditing ? (
         <input
           type="text"
@@ -40,17 +35,17 @@ export default function Heading1({
           onChange={handleContentChange}
           className="w-full text-3xl font-bold text-theme-primary bg-transparent border-b-2 border-theme-primary/20 focus:border-theme-primary focus:outline-none px-2 py-1"
           autoFocus
-          onBlur={() => setIsEditing(false)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              setIsEditing(false);
-            }
-          }}
+          // onBlur={() => setIsEditing(false)}
+          // onKeyDown={(e) => {
+          //   if (e.key === "Enter") {
+          //     setIsEditing(false);
+          //   }
+          // }}
         />
       ) : (
         <h1
           className="text-3xl font-bold text-theme-primary px-2 py-1 cursor-text"
-          onClick={() => setIsEditing(true)}
+          // onClick={() => setIsEditing(true)}
         >
           {content}
         </h1>

@@ -9,6 +9,7 @@ import {
   MdTextFields,
   MdImage,
 } from "react-icons/md";
+import { FaEdit, FaSave } from "react-icons/fa";
 import Heading1 from "@/components/notes-ui/heading-1";
 import Heading2 from "@/components/notes-ui/heading-2";
 import Paragraph from "@/components/notes-ui/paragraph";
@@ -26,11 +27,34 @@ type SubBlockType =
   | "image"
   | "code-block";
 
+// Define the content types for each sub-block type
+interface ListItem {
+  id: string;
+  content: string;
+}
+
+interface ImageContent {
+  src: string;
+  alt: string;
+}
+
+interface CodeContent {
+  code: string;
+  language: string;
+}
+
+// Define the content type based on the sub-block type
+type SubBlockContent =
+  | string // for paragraph
+  | ListItem[] // for unordered-list and ordered-list
+  | ImageContent // for image
+  | CodeContent; // for code-block
+
 interface SubBlock {
   id: string;
   heading: string;
   type: SubBlockType;
-  content: any; // This will vary based on the type
+  content: SubBlockContent; // Typed based on the type of sub-block
 }
 
 interface Block {
@@ -54,6 +78,9 @@ export default function NotePage() {
     ],
   });
 
+  // Add editing mode state
+  const [isEditing, setIsEditing] = useState(false);
+
   // Function to update the block heading
   const updateBlockHeading = (newHeading: string) => {
     setBlock({
@@ -75,7 +102,10 @@ export default function NotePage() {
   };
 
   // Function to update a sub-block's content
-  const updateSubBlockContent = (subBlockId: string, newContent: any) => {
+  const updateSubBlockContent = (
+    subBlockId: string,
+    newContent: SubBlockContent
+  ) => {
     setBlock({
       ...block,
       subBlocks: block.subBlocks.map((subBlock) =>
@@ -116,7 +146,7 @@ export default function NotePage() {
   };
 
   // Helper function to get default content based on block type
-  const getDefaultContentForType = (type: SubBlockType) => {
+  const getDefaultContentForType = (type: SubBlockType): SubBlockContent => {
     switch (type) {
       case "paragraph":
         return "New paragraph content";
@@ -143,9 +173,12 @@ export default function NotePage() {
         return (
           <Paragraph
             id={subBlock.id}
-            initialContent={subBlock.content}
-            onContentChange={(content) =>
-              updateSubBlockContent(subBlock.id, content)
+            initialContent={subBlock.content as string}
+            isEditing={isEditing}
+            onContentChange={
+              isEditing
+                ? (content) => updateSubBlockContent(subBlock.id, content)
+                : undefined
             }
           />
         );
@@ -153,26 +186,39 @@ export default function NotePage() {
         return (
           <UnorderedList
             id={subBlock.id}
-            initialItems={subBlock.content}
-            onItemsChange={(items) => updateSubBlockContent(subBlock.id, items)}
+            initialItems={subBlock.content as ListItem[]}
+            isEditing={isEditing}
+            onItemsChange={
+              isEditing
+                ? (items) => updateSubBlockContent(subBlock.id, items)
+                : undefined
+            }
           />
         );
       case "ordered-list":
         return (
           <OrderedList
             id={subBlock.id}
-            initialItems={subBlock.content}
-            onItemsChange={(items) => updateSubBlockContent(subBlock.id, items)}
+            initialItems={subBlock.content as ListItem[]}
+            isEditing={isEditing}
+            onItemsChange={
+              isEditing
+                ? (items) => updateSubBlockContent(subBlock.id, items)
+                : undefined
+            }
           />
         );
       case "image":
         return (
           <Image
             id={subBlock.id}
-            initialSrc={subBlock.content.src}
-            initialAlt={subBlock.content.alt}
-            onImageChange={(src, alt) =>
-              updateSubBlockContent(subBlock.id, { src, alt })
+            isEditing={isEditing}
+            initialSrc={(subBlock.content as ImageContent).src}
+            initialAlt={(subBlock.content as ImageContent).alt}
+            onImageChange={
+              isEditing
+                ? (src, alt) => updateSubBlockContent(subBlock.id, { src, alt })
+                : undefined
             }
           />
         );
@@ -180,10 +226,14 @@ export default function NotePage() {
         return (
           <CodeBlock
             id={subBlock.id}
-            initialCode={subBlock.content.code}
-            initialLanguage={subBlock.content.language}
-            onCodeChange={(code, language) =>
-              updateSubBlockContent(subBlock.id, { code, language })
+            initialCode={(subBlock.content as CodeContent).code}
+            initialLanguage={(subBlock.content as CodeContent).language}
+            isEditing={isEditing}
+            onCodeChange={
+              isEditing
+                ? (code, language) =>
+                    updateSubBlockContent(subBlock.id, { code, language })
+                : undefined
             }
           />
         );
@@ -193,13 +243,32 @@ export default function NotePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 relative">
+      {/* Edit button in the top right corner */}
+      <button
+        onClick={() => setIsEditing(!isEditing)}
+        className="absolute top-4 right-0 flex items-center gap-2 px-4 py-2 bg-theme-primary text-white rounded-lg hover:bg-theme-primary/90 transition-colors"
+      >
+        {isEditing ? (
+          <>
+            <FaSave className="mr-1" />
+            Save
+          </>
+        ) : (
+          <>
+            <FaEdit className="mr-1" />
+            Edit
+          </>
+        )}
+      </button>
+
       {/* Main Block with Heading 1 */}
-      <div className="mb-6">
+      <div className="mb-6 mt-8">
         <Heading1
           id={block.id}
+          isEditing={isEditing}
           initialContent={block.heading}
-          onContentChange={updateBlockHeading}
+          onContentChange={isEditing ? updateBlockHeading : undefined}
         />
       </div>
 
@@ -214,11 +283,16 @@ export default function NotePage() {
             <div className="mb-4">
               <Heading2
                 id={`heading-${subBlock.id}`}
+                isEditing={isEditing}
                 initialContent={subBlock.heading}
-                onContentChange={(content) =>
-                  updateSubBlockHeading(subBlock.id, content)
+                onContentChange={
+                  isEditing
+                    ? (content) => updateSubBlockHeading(subBlock.id, content)
+                    : undefined
                 }
-                onDelete={() => deleteSubBlock(subBlock.id)}
+                onDelete={
+                  isEditing ? () => deleteSubBlock(subBlock.id) : undefined
+                }
               />
             </div>
 
@@ -228,34 +302,36 @@ export default function NotePage() {
         ))}
       </div>
 
-      {/* Add new sub-block buttons */}
-      <div className="mt-8 flex flex-wrap gap-4 justify-center">
-        <AddBlockButton
-          icon={<MdTextFields size={40} />}
-          label="Text"
-          onClick={() => addSubBlock("paragraph")}
-        />
-        <AddBlockButton
-          icon={<MdFormatListBulleted size={40} />}
-          label="Bullet List"
-          onClick={() => addSubBlock("unordered-list")}
-        />
-        <AddBlockButton
-          icon={<MdFormatListNumbered size={40} />}
-          label="Numbered List"
-          onClick={() => addSubBlock("ordered-list")}
-        />
-        <AddBlockButton
-          icon={<MdImage size={40} />}
-          label="Image"
-          onClick={() => addSubBlock("image")}
-        />
-        <AddBlockButton
-          icon={<MdCode size={40} />}
-          label="Code"
-          onClick={() => addSubBlock("code-block")}
-        />
-      </div>
+      {/* Add new sub-block buttons - only visible in edit mode */}
+      {isEditing && (
+        <div className="mt-8 flex flex-wrap gap-4 justify-center">
+          <AddBlockButton
+            icon={<MdTextFields size={40} />}
+            label="Text"
+            onClick={() => addSubBlock("paragraph")}
+          />
+          <AddBlockButton
+            icon={<MdFormatListBulleted size={40} />}
+            label="Bullet List"
+            onClick={() => addSubBlock("unordered-list")}
+          />
+          <AddBlockButton
+            icon={<MdFormatListNumbered size={40} />}
+            label="Numbered List"
+            onClick={() => addSubBlock("ordered-list")}
+          />
+          <AddBlockButton
+            icon={<MdImage size={40} />}
+            label="Image"
+            onClick={() => addSubBlock("image")}
+          />
+          <AddBlockButton
+            icon={<MdCode size={40} />}
+            label="Code"
+            onClick={() => addSubBlock("code-block")}
+          />
+        </div>
+      )}
 
       {/* Debug information - can be removed in production */}
       <div className="mt-12 p-4 bg-gray-100 rounded-lg">
