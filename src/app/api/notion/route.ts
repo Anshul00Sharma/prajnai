@@ -9,11 +9,9 @@ const notionClient = new Client({
 
 const databaseId = process.env.NOTION_DATABASE_ID;
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     // Query the database to get pages
-    // console.log(request);
-
     const response = await notionClient.databases.query({
       database_id: databaseId as string,
       page_size: 10, // Limit to 10 pages
