@@ -12,7 +12,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
-  const { subjects, setSubjects, setCurrentSubjectId } = useSubject();
+  const { subjects, setSubjects, setCurrentSubjectId, currentSubjectId } = useSubject();
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -123,6 +123,39 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
               </button>
             )}
           </div>
+          {isCollapsed && (
+            <div className="flex flex-col items-center space-y-2 mt-2">
+              {subjects.map((subject) => (
+                <Link
+                  key={subject.id}
+                  href={`/subject`}
+                  onClick={() => setCurrentSubjectId(subject.id)}
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                    currentSubjectId === subject.id
+                      ? "bg-theme-primary text-white"
+                      : "hover:bg-theme-light text-gray-700"
+                  }`}
+                  title={subject.name || "id_" + subject.id.slice(-9)}
+                >
+                  {(subject.name || "id_" + subject.id.slice(-9)).charAt(0).toUpperCase()}
+                </Link>
+              ))}
+              {subjects.length < 10 && (
+                <button
+                  onClick={handleCreateSubject}
+                  disabled={isCreating}
+                  className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-theme-light text-theme-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Create new subject"
+                >
+                  {isCreating ? (
+                    <div className="w-4 h-4 border-2 border-theme-primary border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <FaPlus className="text-sm" />
+                  )}
+                </button>
+              )}
+            </div>
+          )}
           {!isCollapsed && (
             <div className="space-y-2">
               {subjects.map((subject) => (
@@ -130,7 +163,11 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
                   key={subject.id}
                   href={`/subject`}
                   onClick={() => setCurrentSubjectId(subject.id)}
-                  className="block px-2 py-1.5 rounded-lg hover:bg-theme-light text-sm"
+                  className={`block px-2 py-1.5 rounded-lg text-sm transition-colors ${
+                    currentSubjectId === subject.id
+                      ? "bg-theme-primary text-white font-medium"
+                      : "hover:bg-theme-light text-gray-700"
+                  }`}
                 >
                   {subject.name || "id_" + subject.id.slice(-9)}
                 </Link>

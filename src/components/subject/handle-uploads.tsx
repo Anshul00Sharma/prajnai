@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { SubjectUploadPopup } from "./subject-upload-popup";
 import type { UploadData } from "../../contexts/upload-context";
 import { useUpload } from "../../contexts/upload-context";
 import { useSubject } from "../../contexts/subject-context";
+import type { Dispatch, SetStateAction } from "react";
 // import { storeFileInIndexedDB } from "../../utils/file-storage";
 
 // API client for uploads
@@ -14,7 +16,7 @@ const uploadToServer = async (
 ): Promise<boolean> => {
   try {
     const formData = new FormData();
-    formData.append("id", upload.id.toString());
+    formData.append("id", uuidv4());
     formData.append("type", upload.type);
     formData.append("content", upload.content);
     formData.append("title", upload.title);
@@ -53,16 +55,19 @@ const uploadToServer = async (
       }
     }
 
-    const response = await fetch("http://localhost:8080/api/upload/", {
-      method: "POST",
-      headers: {
-        // Don't set Content-Type header when using FormData
-        // It will be automatically set with the correct boundary
-        Accept: "application/json",
-      },
-      credentials: "include",
-      body: formData,
-    });
+    const response = await fetch(
+      "https://backend-large-file-handling-983894129463.asia-south2.run.app/api/upload/",
+      {
+        method: "POST",
+        headers: {
+          // Don't set Content-Type header when using FormData
+          // It will be automatically set with the correct boundary
+          Accept: "application/json",
+        },
+
+        body: formData,
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Upload failed with status: ${response.status}`);
@@ -113,14 +118,20 @@ const openDatabase = (): Promise<IDBDatabase> => {
   });
 };
 
-export default function HandleUploads() {
+export default function HandleUploads({
+  setCards,
+}: {
+  setCards: Dispatch<SetStateAction<number[]>>;
+}) {
   const [showUploadPopup, setShowUploadPopup] = useState(false);
-  const { uploadedData } = useUpload();
+  const { uploadedData, setUploadedData } = useUpload();
   const { currentSubjectId } = useSubject();
 
   const handleUploadComplete = () => {
-    console.log("All subjects uploaded successfully!");
+    console.log("All uploads completed successfully!");
     setShowUploadPopup(false);
+    setUploadedData([]); // Clear all uploaded data
+    setCards([]);
   };
 
   return (
@@ -134,7 +145,7 @@ export default function HandleUploads() {
 
       {showUploadPopup && currentSubjectId && (
         <SubjectUploadPopup
-          subjects={uploadedData}
+          uploads={uploadedData}
           onClose={() => setShowUploadPopup(false)}
           onComplete={handleUploadComplete}
           uploadFunction={async (upload) => {

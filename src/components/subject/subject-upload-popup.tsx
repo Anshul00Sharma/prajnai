@@ -16,21 +16,21 @@ import type { UploadData } from "../../contexts/upload-context";
 type UploadStatus = "pending" | "uploading" | "success" | "error";
 
 interface SubjectUploadItem {
-  subject: UploadData;
+  upload: UploadData;
   status: UploadStatus;
   progress: number;
   error?: string;
 }
 
 interface SubjectUploadPopupProps {
-  subjects: UploadData[];
+  uploads: UploadData[];
   onClose: () => void;
   onComplete?: () => void;
   uploadFunction: (upload: UploadData) => Promise<boolean>;
 }
 
 export function SubjectUploadPopup({
-  subjects,
+  uploads,
   onClose,
   onComplete,
   uploadFunction,
@@ -45,17 +45,17 @@ export function SubjectUploadPopup({
   // Initialize upload items from subjects
   useEffect(() => {
     setUploadItems(
-      subjects.map((subject) => ({
-        subject,
+      uploads.map((upload) => ({
+        upload,
         status: "pending",
         progress: 0,
       }))
     );
-  }, [subjects]);
+  }, [uploads]);
 
   // Function to handle real uploads
   const handleUpload = async (index: number) => {
-    if (index >= subjects.length) {
+    if (index >= uploads.length) {
       if (onComplete) onComplete();
       setIsUploading(false);
       return;
@@ -85,7 +85,7 @@ export function SubjectUploadPopup({
       }, 150);
 
       // Perform the actual upload
-      const success = await uploadFunction(subjects[index]);
+      const success = await uploadFunction(uploads[index]);
 
       // Clear the interval
       clearInterval(progressInterval);
@@ -139,10 +139,10 @@ export function SubjectUploadPopup({
 
   // Start upload when component mounts
   useEffect(() => {
-    if (subjects.length > 0 && !isUploading) {
+    if (uploads.length > 0 && !isUploading) {
       handleUpload(0);
     }
-  }, [subjects]);
+  }, [uploads]);
 
   // Handle minimize/maximize toggle
   const toggleMinimize = () => {
@@ -252,7 +252,8 @@ export function SubjectUploadPopup({
                   <span className="font-medium">Upload failed</span>
                 </div>
                 <p className="text-sm text-red-600 mb-2">
-                  Some uploads could not be completed. Please retry or close and try again later.
+                  Some uploads could not be completed. Please retry or close and
+                  try again later.
                 </p>
                 <button
                   onClick={retryFailedUploads}
@@ -280,7 +281,7 @@ export function SubjectUploadPopup({
                 >
                   <div className="flex justify-between items-center mb-1">
                     <span className="font-medium text-theme-primary truncate max-w-[200px]">
-                      {item.subject.title}
+                      {item.upload.title}
                     </span>
                     <div className="flex items-center">
                       {item.status === "pending" && (
@@ -357,7 +358,7 @@ export function SubjectUploadPopup({
 
           {currentIndex < uploadItems.length && (
             <div className="mt-2 text-xs text-theme-primary/80 truncate">
-              Current: {uploadItems[currentIndex]?.subject.title}
+              Current: {uploadItems[currentIndex]?.upload.title}
             </div>
           )}
         </motion.div>

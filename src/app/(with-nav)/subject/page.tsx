@@ -176,7 +176,7 @@ export default function SubjectPage() {
             {subjectTitle || "New Subject"}
           </h1>
         </div>
-        <HandleUploads />
+        <HandleUploads setCards={setCards} />
 
         {/* Previous Uploads Section */}
         <section className="space-y-4">

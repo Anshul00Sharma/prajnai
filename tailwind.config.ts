@@ -12,10 +12,10 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
         theme: {
-          primary: '#7B97A0',    // Steel blue
-          secondary: '#B3C8CF',  // Light steel blue
-          accent: '#E5E1DA',     // Light gray
-          light: '#EEEEEE',      // Off white
+          primary: '#334155',    // Steel blue
+          secondary: '#E2E8F0',  // Light steel blue
+          accent: '#F59E0B',     // Light gray
+          light: '#E2E8F0',      // Off white
         },
       },
     },
@@ -24,3 +24,14 @@ const config: Config = {
 };
 
 export default config;
+
+// colors: {
+//   background: "var(--background)",
+//   foreground: "var(--foreground)",
+//   theme: {
+//     primary: '#7B97A0',    // Steel blue
+//     secondary: '#B3C8CF',  // Light steel blue
+//     accent: '#E5E1DA',     // Light gray
+//     light: '#EEEEEE',      // Off white
+//   },
+// },
