@@ -180,10 +180,10 @@ export default function SubjectPage() {
   );
 
   return (
-    <main className="min-h-screen w-full bg-theme-light p-4 lg:p-8">
+    <main className="min-h-screen w-full bg-theme-light p-4 lg:p-8 ">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Subject Title and Upload Button */}
-        <div className="flex items-center justify-between mt-12">
+        <div className="flex items-center justify-between mt-20 ">
           <h1 className="text-4xl font-bold text-theme-primary">
             {subjectTitle || "New Subject"}
           </h1>
