@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+type Params = { params: Promise<{ id: string }> };
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Params
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
