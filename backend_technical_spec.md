@@ -59,7 +59,7 @@
 - `title` (text)
 - `subject_id` (text): Reference to subject
 - `additional_info` (text)
-- `notion_page_id` (text)
+- `note` (jsonb): JSON data
 - `created_at` (datetime): Creation timestamp
 - `updated_at` (datetime): Last update timestamp
 

@@ -3,7 +3,7 @@
 import { SubjectTitlePopup } from "@/components/subject/subject-title-popup";
 import UploadCard from "@/components/subject/upload-card";
 import { useState, useEffect, useCallback } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaSync } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useSubject } from "@/contexts/subject-context";
 import { useUpload } from "@/contexts/upload-context";
@@ -38,6 +38,7 @@ export default function SubjectPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [previousUploads, setPreviousUploads] = useState<PreviousUpload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (!currentSubjectId) {
@@ -61,9 +62,15 @@ export default function SubjectPage() {
   }, [router, currentSubjectId, subjects]);
 
   // Fetch previous uploads
-  useEffect(() => {
-    async function fetchUploads() {
+  const fetchUploads = useCallback(
+    async (showRefreshAnimation = false) => {
       if (!currentSubjectId) return;
+
+      if (showRefreshAnimation) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
 
       try {
         const response = await fetch(`/api/upload/subject/${currentSubjectId}`);
@@ -75,11 +82,16 @@ export default function SubjectPage() {
         console.error("Error fetching uploads:", error);
       } finally {
         setIsLoading(false);
+        setIsRefreshing(false);
       }
-    }
+    },
+    [currentSubjectId]
+  );
 
+  // Initial fetch of uploads
+  useEffect(() => {
     fetchUploads();
-  }, [currentSubjectId]);
+  }, [fetchUploads]);
 
   const handleDeleteUpload = useCallback(
     async (uploadId: string) => {
@@ -170,19 +182,31 @@ export default function SubjectPage() {
   return (
     <main className="min-h-screen w-full bg-theme-light p-4 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Subject Title */}
+        {/* Subject Title and Upload Button */}
         <div className="flex items-center justify-between mt-12">
           <h1 className="text-4xl font-bold text-theme-primary">
             {subjectTitle || "New Subject"}
           </h1>
+          <HandleUploads setCards={setCards} />
         </div>
-        <HandleUploads setCards={setCards} />
 
         {/* Previous Uploads Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-theme-primary">
-            Previous Uploads
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-theme-primary">
+              Previous Uploads
+            </h2>
+            <button
+              onClick={() => fetchUploads(true)}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 px-3 py-1.5 bg-theme-primary/10 hover:bg-theme-primary/20 text-theme-primary rounded-md transition-colors disabled:opacity-50"
+            >
+              <FaSync
+                className={`text-sm ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              <span className="text-sm">Refresh</span>
+            </button>
+          </div>
           {isLoading ? (
             <div className="bg-white rounded-xl shadow-lg p-6">
               <p className="text-theme-primary/60 text-center py-8">

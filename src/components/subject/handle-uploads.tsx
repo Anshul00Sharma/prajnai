@@ -135,7 +135,7 @@ export default function HandleUploads({
   };
 
   return (
-    <div className="p-6">
+    <div>
       <button
         onClick={() => setShowUploadPopup(true)}
         className="px-4 py-2 bg-theme-primary text-white rounded-lg hover:bg-theme-primary/90 transition-colors"
