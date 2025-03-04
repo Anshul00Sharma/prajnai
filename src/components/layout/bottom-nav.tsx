@@ -9,10 +9,12 @@ import { getUserId } from "@/utils/local-storage";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { useCreditContext } from "./nav-bar";
 
 export function BottomNav() {
   const { subjects, setSubjects, setCurrentSubjectId, currentSubjectId } =
     useSubject();
+  const { credits, isLoading, fetchCredits } = useCreditContext();
   const [isCreating, setIsCreating] = useState(false);
   const [showSubjects, setShowSubjects] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -138,8 +140,34 @@ export function BottomNav() {
               </motion.div>
             </button>
             
-            <div className="w-10 opacity-0">
-              {/* Empty div for flex spacing */}
+            <div className="flex items-center md:hidden">
+              <div className="flex items-center gap-1 text-theme-primary">
+                <span className="text-sm font-medium">
+                  {credits !== null ? credits : '...'}
+                </span>
+                <button
+                  onClick={fetchCredits}
+                  disabled={isLoading}
+                  className="p-1 rounded-full hover:bg-theme-light/50 transition-all"
+                  aria-label="Refresh credits"
+                >
+                  <motion.svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    animate={isLoading ? { rotate: 360 } : {}}
+                    transition={isLoading ? { repeat: Infinity, duration: 1, ease: "linear" } : {}}
+                  >
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+                  </motion.svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>

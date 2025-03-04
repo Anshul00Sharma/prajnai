@@ -180,7 +180,7 @@ export default function TopicPage() {
       <div className="p-6 mt-20">
         <div className="flex justify-between items-center mb-6 ">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-theme-primary">Topics</h1>
+            <h1 className="text-2xl font-bold text-theme-primary">Notes</h1>
             <button
               onClick={() => fetchTopics(true)}
               disabled={isRefreshing || isLoading}
@@ -197,7 +197,7 @@ export default function TopicPage() {
             className="px-4 py-2 rounded-lg bg-theme-primary text-theme-light hover:bg-theme-primary/90 transition-colors"
             disabled={!currentSubjectId}
           >
-            Create Topic
+            Create a note
           </button>
         </div>
 
@@ -210,7 +210,7 @@ export default function TopicPage() {
         ) : topics.length === 0 ? (
           <div className="text-center p-8 bg-gray-50 rounded-lg">
             <p className="text-gray-500">
-              No topics found. Create your first topic!
+              No notes found. Create your first note!
             </p>
           </div>
         ) : (

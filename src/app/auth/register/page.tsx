@@ -84,6 +84,29 @@ export default function RegisterPage() {
           // Continue with registration flow even if subject creation fails
         }
 
+        try {
+          // Initialize user credits
+          const creditResponse = await fetch(`/api/credit/${userId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ credit: 50 }),
+          });
+
+          if (!creditResponse.ok) {
+            console.error(
+              "Failed to initialize credits:",
+              await creditResponse.text()
+            );
+          } else {
+            console.log("Credits initialized successfully");
+          }
+        } catch (creditError) {
+          console.error("Error initializing credits:", creditError);
+          // Continue with registration flow even if credit initialization fails
+        }
+
         // Redirect to home page or confirmation page
         router.push("/subject");
       } else {
