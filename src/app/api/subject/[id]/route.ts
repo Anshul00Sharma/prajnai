@@ -13,6 +13,7 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     const { name } = updateSubjectSchema.parse(body);
+    console.log("id, name",id, name);
 
     const now = new Date().toISOString();
     const { data, error } = await supabase

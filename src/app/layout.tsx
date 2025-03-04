@@ -19,7 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${domine.className} ${inter.className} antialiased bg-theme-light`}>
+      <body
+        className={`${domine.className} ${inter.className} antialiased bg-theme-light`}
+      >
         <SubjectProvider>
           <UploadProvider>{children}</UploadProvider>
         </SubjectProvider>

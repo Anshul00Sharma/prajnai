@@ -1,68 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { getUserId, hasUserId } from "@/utils/local-storage";
-import { useSubject } from "@/contexts/subject-context";
-import { useEffect, useState } from "react";
+import { hasUserId } from "@/utils/local-storage";
+
+import { useState } from "react";
 
 export default function Home() {
   const router = useRouter();
-  const { setCurrentSubjectId } = useSubject();
+
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const initUser = async () => {
-      const userId = getUserId();
-      try {
-        await fetch("/api/user", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id: userId }),
-        });
-      } catch (error) {
-        console.error("Failed to initialize user:", error);
-      }
-    };
-
-    if (!hasUserId()) initUser();
-  }, []);
 
   const handleStart = async () => {
     setIsLoading(true);
     try {
-      const userId = getUserId();
-      const response = await fetch(`/api/subject?userId=${userId}`);
-      if (!response.ok) throw new Error("Failed to fetch subjects");
-
-      const subjects = await response.json();
-      let subjectId: string;
-
-      if (subjects.length === 0) {
-        // Create initial subject if none exists
-        const newSubject = {
-          id: crypto.randomUUID(),
-          user_id: userId,
-        };
-
-        const createResponse = await fetch("/api/subject", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newSubject),
-        });
-
-        if (!createResponse.ok) throw new Error("Failed to create subject");
-        const createdSubject = await createResponse.json();
-        subjectId = createdSubject.id;
-      } else {
-        // Use first existing subject
-        subjectId = subjects[0].id;
+      // If user is not logged in, redirect to login page
+      const userLoggedIn = await hasUserId();
+      console.log("User logged in:", userLoggedIn);
+      if (!userLoggedIn) {
+        router.push("/auth/login");
+        return;
       }
 
-      setCurrentSubjectId(subjectId);
+      // Navigate to the subject page
       router.push("/subject");
     } catch (error) {
       console.error("Error:", error);

@@ -1,62 +1,99 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FaBook, FaPlus } from "react-icons/fa";
+import { FaBook, FaPlus, FaSignOutAlt } from "react-icons/fa";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSubject } from "@/contexts/subject-context";
 import { getUserId } from "@/utils/local-storage";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/lib/supabase";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 export function BottomNav() {
-  const { subjects, setSubjects, setCurrentSubjectId, currentSubjectId } = useSubject();
+  const { subjects, setSubjects, setCurrentSubjectId, currentSubjectId } =
+    useSubject();
   const [isCreating, setIsCreating] = useState(false);
   const [showSubjects, setShowSubjects] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const id = await getUserId();
+        setUserId(id);
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchUserId();
+  }, []);
 
   useEffect(() => {
     const fetchSubjects = async () => {
+      if (!userId) return;
+
       try {
-        const userId = getUserId();
         const response = await fetch(`/api/subject?userId=${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch subjects');
+        if (!response.ok) throw new Error("Failed to fetch subjects");
         const data = await response.json();
         setSubjects(data);
+        setCurrentSubjectId(data[0].id);
       } catch (error) {
-        console.error('Error fetching subjects:', error);
+        console.error("Error fetching subjects:", error);
       }
     };
 
     fetchSubjects();
-  }, [setSubjects]);
+  }, [userId, setSubjects]);
 
   const handleCreateSubject = async () => {
-    if (isCreating) return;
-    
+    if (isCreating || !userId) return;
+
     setIsCreating(true);
     try {
-      const userId = getUserId();
       const newSubject = {
         id: crypto.randomUUID(),
-        user_id: userId
+        user_id: userId,
       };
-      
-      const response = await fetch('/api/subject', {
-        method: 'POST',
+
+      const response = await fetch("/api/subject", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(newSubject)
+        body: JSON.stringify(newSubject),
       });
 
-      if (!response.ok) throw new Error('Failed to create subject');
-      
+      if (!response.ok) throw new Error("Failed to create subject");
+
       const createdSubject = await response.json();
       setSubjects([createdSubject, ...subjects]); // Add new subject at the beginning
       setCurrentSubjectId(createdSubject.id); // Select the new subject
       setShowSubjects(false); // Close the subjects panel after creating
     } catch (error) {
-      console.error('Error creating subject:', error);
+      console.error("Error creating subject:", error);
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Clear any local state
+      setSubjects([]);
+      setCurrentSubjectId("");
+      
+      // Redirect to login page
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
   };
 
@@ -65,7 +102,15 @@ export function BottomNav() {
       {/* Bottom Navigation Bar - Only visible on mobile */}
       <div className="fixed bottom-0 left-0 right-0 z-50 block lg:hidden">
         <div className="bg-white shadow-lg rounded-t-xl border border-theme-primary/20">
-          <div className="flex justify-center py-2">
+          <div className="flex justify-between items-center px-4 py-2">
+            <button
+              onClick={() => setShowLogoutModal(true)}
+              className="flex items-center text-blue-600 px-3 py-2"
+              aria-label="Logout"
+            >
+              <FaSignOutAlt />
+            </button>
+            
             <button
               onClick={() => setShowSubjects(!showSubjects)}
               className="flex items-center gap-2 px-4 py-2 text-theme-primary font-medium rounded-lg hover:bg-theme-light transition-colors"
@@ -92,6 +137,10 @@ export function BottomNav() {
                 </svg>
               </motion.div>
             </button>
+            
+            <div className="w-10 opacity-0">
+              {/* Empty div for flex spacing */}
+            </div>
           </div>
         </div>
       </div>
@@ -126,7 +175,7 @@ export function BottomNav() {
                 </h2>
                 <button
                   onClick={handleCreateSubject}
-                  disabled={isCreating}
+                  disabled={isCreating || !userId}
                   className="p-1.5 rounded-lg hover:bg-theme-light text-theme-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                   aria-label="Create new subject"
                 >
@@ -140,7 +189,9 @@ export function BottomNav() {
 
               <div className="space-y-2">
                 {subjects.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic">No subjects yet. Create one to get started!</p>
+                  <p className="text-sm text-gray-500 italic">
+                    No subjects yet. Create one to get started!
+                  </p>
                 ) : (
                   subjects.map((subject) => (
                     <motion.div
@@ -175,6 +226,17 @@ export function BottomNav() {
           </>
         )}
       </AnimatePresence>
+      
+      {/* Logout Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+        title="Logout Confirmation"
+        message="Are you sure you want to log out of your account?"
+        confirmText="Logout"
+        cancelText="Cancel"
+      />
     </>
   );
 }

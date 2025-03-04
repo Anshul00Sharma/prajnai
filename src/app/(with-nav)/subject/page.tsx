@@ -41,11 +41,6 @@ export default function SubjectPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    if (!currentSubjectId) {
-      router.push("/");
-      return;
-    }
-
     const currentSubject = subjects.find(
       (subject) => subject.id === currentSubjectId
     );

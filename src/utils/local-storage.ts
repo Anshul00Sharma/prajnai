@@ -4,8 +4,9 @@ export interface Subject {
   createdAt: string;
 }
 
+import { supabase } from "@/lib/supabase";
+
 const SUBJECTS_KEY = "subjects";
-const USER_ID_KEY = "userId";
 
 export function getSubjects(): Subject[] {
   if (typeof window === "undefined") return [];
@@ -37,18 +38,37 @@ export function getSubjectName(id: string | null): string | undefined {
   return subject?.name;
 }
 
-export function getUserId(): string {
+export async function getUserId(): Promise<string> {
   if (typeof window === "undefined") return "";
   
-  let userId = localStorage.getItem(USER_ID_KEY);
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem(USER_ID_KEY, userId);
+  try {
+    // Get the current user session from Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Return the user ID if session exists
+    if (session?.user?.id) {
+      return session.user.id;
+    }
+    
+    // If no session, return empty string
+    return "";
+  } catch (error) {
+    console.error("Error getting user ID from Supabase:", error);
+    return "";
   }
-  return userId;
 }
 
-export function hasUserId(): boolean {
+export async function hasUserId(): Promise<boolean> {
   if (typeof window === "undefined") return false;
-  return !!localStorage.getItem(USER_ID_KEY);
+  
+  try {
+    // Get the current user session from Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Return true if session exists and has a user ID
+    return !!session?.user?.id;
+  } catch (error) {
+    console.error("Error checking user ID from Supabase:", error);
+    return false;
+  }
 }
