@@ -63,6 +63,34 @@
 - `created_at` (datetime): Creation timestamp
 - `updated_at` (datetime): Last update timestamp
 
+### exam table
+
+- `id` (uuid): Unique identifier for the exam
+- `created_at` (timestamptz): Timestamp when the exam was created
+- `title` (text): Title of the exam
+- `additionalInfo` (text): Additional information about the exam
+- `feedback` (text): Feedback for the exam
+- `true_false` (jsonb): JSON data for true/false questions
+- `short_answer` (jsonb): JSON data for short answer questions
+- `mcq` (jsonb): JSON data for multiple-choice questions
+- `subject_id` (text): Identifier for the subject
+- `user_id` (uuid): Identifier for the user who created the exam
+- `shortAnswerCount` (int8): Number of short answer questions
+- `mcqCount` (int8): Number of multiple-choice questions
+- `trueFalseCount` (int8): Number of true/false questions
+- `topics` (jsonb): JSON data for exam topics
+- `exam_ready` (bool): Indicates if the exam is ready for use
+
+### ai-chat-message table
+
+- `id` (uuid): Unique identifier for the chat message
+- `created_at` (timestamptz): Timestamp when the message was created
+- `by` (text): Sender of the message ("user" or "ai")
+- `content` (text): Content of the message
+- `note-id` (text): Reference to associated topic table
+- `subject-id` (text): Reference to associated subject
+- `timestamp` (timestamptz): Timestamp for the message
+
 ## Relationships
 
 1. user to subject (One-to-Many)
@@ -182,7 +210,7 @@ Create a new upload
 
 **Request Body:**
 
-````json
+```json
 {
   "id": "string",
   "type": "string",
@@ -193,6 +221,7 @@ Create a new upload
   "created_at": "datetime",
   "updated_at": "datetime"
 }
+```
 
 **Response (201):**
 
@@ -202,7 +231,7 @@ Create a new upload
   "created_at": "datetime",
   "updated_at": "datetime"
 }
-````
+```
 
 ### GET /api/upload/subject/{subject_id}
 

@@ -101,6 +101,16 @@ export function NavBar() {
             >
               Notes
             </Link>
+            <Link
+              href="/exam"
+              className={`px-6 py-2 rounded-full transition-all ${
+                pathname === "/exam"
+                  ? "bg-theme-light text-theme-primary shadow-md scale-105"
+                  : "text-theme-light hover:bg-theme-secondary/20"
+              }`}
+            >
+              Exam
+            </Link>
           </div>
         </nav>
       </div>

@@ -30,3 +30,18 @@ body {
   scrollbar-width: thin;
   scrollbar-color: theme('colors.theme.primary') theme('colors.theme.light');
 }
+
+/* Shimmer animation for loading effects */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background-size: 200% 100%;
+}
