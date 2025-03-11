@@ -1,6 +1,4 @@
 "use client";
-
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCheck, FaTimes } from "react-icons/fa";
 
@@ -113,7 +111,11 @@ export const MCQQuestion: React.FC<MCQQuestionProps> = ({
             <h4 className="font-medium text-blue-700 mb-2">AI Explanation:</h4>
             <p className="text-blue-900 text-sm">{question.ai_explanation}</p>
             <div className="mt-2 flex items-center text-sm text-blue-700">
-              <span className={`font-medium ${isCorrect ? "text-green-600" : "text-red-600"}`}>
+              <span
+                className={`font-medium ${
+                  isCorrect ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 {isCorrect ? "Correct" : "Incorrect"} Answer: {question.answer}
               </span>
             </div>
