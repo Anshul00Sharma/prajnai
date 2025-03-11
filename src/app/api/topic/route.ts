@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('topic')
-      .select('*')
+      .select('id, title, subject_id, additional_info, note, have_note, created_at, updated_at')
       .eq('subject_id', subjectId)
       .order('created_at', { ascending: false });
 

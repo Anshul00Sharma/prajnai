@@ -16,9 +16,13 @@ import Heading2 from "@/components/notes-ui/heading-2";
 import Paragraph from "@/components/notes-ui/paragraph";
 import UnorderedList from "@/components/notes-ui/unordered-list";
 import OrderedList from "@/components/notes-ui/ordered-list";
-import Image from "@/components/notes-ui/image";
+import ImageComponent from "@/components/notes-ui/image";
+import Image from "next/image";
 import CodeBlock from "@/components/notes-ui/code-block";
 import AddBlockButton from "@/components/notes-ui/add-block-button";
+import Chatbot from "@/components/chat/chatbot";
+import { motion } from "framer-motion";
+import AI_image from "../../../../public/ai_tutor.png";
 
 // Define types for our note structure
 type SubBlockType =
@@ -88,6 +92,9 @@ export default function NotePage() {
   // Add editing mode state
   const [isEditing, setIsEditing] = useState(false);
 
+  // Chatbot state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   // Fetch note data from API
   useEffect(() => {
     const fetchNoteData = async () => {
@@ -97,7 +104,7 @@ export default function NotePage() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch note data');
+          throw new Error(errorData.error || "Failed to fetch note data");
         }
 
         const data = await response.json();
@@ -108,8 +115,10 @@ export default function NotePage() {
 
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching note:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch note data');
+        console.error("Error fetching note:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch note data"
+        );
         setLoading(false);
       }
     };
@@ -248,7 +257,7 @@ export default function NotePage() {
         );
       case "image":
         return (
-          <Image
+          <ImageComponent
             id={subBlock.id}
             isEditing={isEditing}
             initialSrc={(subBlock.content as ImageContent).src}
@@ -282,119 +291,176 @@ export default function NotePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 relative">
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-xl">Loading note...</div>
-        </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      ) : (
-        <>
-          {/* Edit button in the top right corner */}
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="absolute top-4 right-0 flex items-center gap-2 px-4 py-2 bg-theme-primary text-white rounded-lg hover:bg-theme-primary/90 transition-colors"
-          >
-            {isEditing ? (
-              <>
-                <FaSave className="mr-1" />
-                Save
-              </>
-            ) : (
-              <>
-                <FaEdit className="mr-1" />
-                Edit
-              </>
-            )}
-          </button>
+      {/* Navbar */}
+      <div className="fixed top-0 left-0 right-0 bg-white shadow-md z-10">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+          <h1 className="text-xl font-semibold text-theme-primary">
+            {loading ? "Loading Note..." : block.heading}
+          </h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-theme-primary text-white rounded-lg hover:bg-theme-primary/90 transition-colors"
+            >
+              {isEditing ? (
+                <>
+                  <FaSave className="mr-1" size={16} />
+                  Save
+                </>
+              ) : (
+                <>
+                  <FaEdit className="mr-1" size={16} />
+                  Edit
+                </>
+              )}
+            </button>
 
-          {/* Main Block with Heading 1 */}
-          <div className="mb-6 mt-8">
-            <Heading1
-              id={block.id}
-              isEditing={isEditing}
-              initialContent={block.heading}
-              onContentChange={isEditing ? updateBlockHeading : undefined}
-            />
-          </div>
-
-          {/* Sub-Blocks */}
-          <div className="space-y-8">
-            {block.subBlocks.map((subBlock) => (
-              <div
-                key={subBlock.id}
-                className="border border-theme-primary/10 rounded-lg p-4 bg-white shadow-sm"
+            {/* Chatbot Button with Animation */}
+            <div className="relative group">
+              <motion.button
+                className="flex items-center justify-center w-14 h-14 border bg-theme-primary border-theme-secondary text-white rounded-full transition-colors overflow-hidden"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ x: 0 }}
+                animate={!isChatOpen ? {
+                  x: [0, -3, 3, -3, 0],
+                  transition: {
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    duration: 0.3,
+                    repeatDelay: 2,
+                  },
+                } : { x: 0 }}
+                onClick={() => setIsChatOpen(true)}
               >
-                {/* Heading 2 for the Sub-Block */}
-                <div className="mb-4">
-                  <Heading2
-                    id={`heading-${subBlock.id}`}
-                    isEditing={isEditing}
-                    initialContent={subBlock.heading}
-                    onContentChange={
-                      isEditing
-                        ? (content) => updateSubBlockHeading(subBlock.id, content)
-                        : undefined
-                    }
-                    onDelete={
-                      isEditing ? () => deleteSubBlock(subBlock.id) : undefined
-                    }
-                  />
-                </div>
-
-                {/* Content of the Sub-Block based on its type */}
-                <div className="ml-4">{renderSubBlockContent(subBlock)}</div>
-              </div>
-            ))}
+                <Image
+                  src={AI_image}
+                  alt="AI Tutor"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ objectFit: "contain", scale: 1.1 }}
+                  className="mt-2"
+                />
+              </motion.button>
+              <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-3 py-1 bg-theme-primary text-theme-light text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-10">
+                AI Tutor
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 border-8 border-transparent border-b-theme-primary"></span>
+              </span>
+            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Add new sub-block buttons - only visible in edit mode */}
-          {isEditing && (
-            <div className="mt-8 flex flex-wrap gap-4 justify-center">
-              <AddBlockButton
-                icon={<MdTextFields size={40} />}
-                label="Text"
-                onClick={() => addSubBlock("paragraph")}
-              />
-              <AddBlockButton
-                icon={<MdFormatListBulleted size={40} />}
-                label="Bullet List"
-                onClick={() => addSubBlock("unordered-list")}
-              />
-              <AddBlockButton
-                icon={<MdFormatListNumbered size={40} />}
-                label="Numbered List"
-                onClick={() => addSubBlock("ordered-list")}
-              />
-              <AddBlockButton
-                icon={<MdImage size={40} />}
-                label="Image"
-                onClick={() => addSubBlock("image")}
-              />
-              <AddBlockButton
-                icon={<MdCode size={40} />}
-                label="Code"
-                onClick={() => addSubBlock("code-block")}
+      {/* Chatbot Component */}
+      <Chatbot
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        noteId={topicId}
+      />
+
+      {/* Add padding to account for fixed navbar */}
+      <div className="pt-16">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-xl">Loading note...</div>
+          </div>
+        ) : error ? (
+          <div
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        ) : (
+          <>
+            {/* Main Block with Heading 1 */}
+            <div className="mb-6">
+              <Heading1
+                id={block.id}
+                isEditing={isEditing}
+                initialContent={block.heading}
+                onContentChange={isEditing ? updateBlockHeading : undefined}
               />
             </div>
-          )}
 
-          {/* Debug information - can be removed in production */}
-          <div className="mt-12 p-4 bg-gray-100 rounded-lg">
-            <details>
-              <summary className="cursor-pointer text-sm text-theme-primary/70">
-                Debug: Current Note Structure
-              </summary>
-              <pre className="mt-2 p-2 bg-gray-200 rounded text-xs overflow-auto">
-                {JSON.stringify(block, null, 2)}
-              </pre>
-            </details>
-          </div>
-        </>
-      )}
+            {/* Sub-Blocks */}
+            <div className="space-y-8">
+              {block.subBlocks.map((subBlock) => (
+                <div
+                  key={subBlock.id}
+                  className="border border-theme-primary/10 rounded-lg p-4 bg-white shadow-sm"
+                >
+                  {/* Heading 2 for the Sub-Block */}
+                  <div className="mb-4">
+                    <Heading2
+                      id={`heading-${subBlock.id}`}
+                      isEditing={isEditing}
+                      initialContent={subBlock.heading}
+                      onContentChange={
+                        isEditing
+                          ? (content) =>
+                              updateSubBlockHeading(subBlock.id, content)
+                          : undefined
+                      }
+                      onDelete={
+                        isEditing
+                          ? () => deleteSubBlock(subBlock.id)
+                          : undefined
+                      }
+                    />
+                  </div>
+
+                  {/* Content of the Sub-Block based on its type */}
+                  <div className="ml-4">{renderSubBlockContent(subBlock)}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add new sub-block buttons - only visible in edit mode */}
+            {isEditing && (
+              <div className="mt-8 flex flex-wrap gap-4 justify-center">
+                <AddBlockButton
+                  icon={<MdTextFields size={40} />}
+                  label="Text"
+                  onClick={() => addSubBlock("paragraph")}
+                />
+                <AddBlockButton
+                  icon={<MdFormatListBulleted size={40} />}
+                  label="Bullet List"
+                  onClick={() => addSubBlock("unordered-list")}
+                />
+                <AddBlockButton
+                  icon={<MdFormatListNumbered size={40} />}
+                  label="Numbered List"
+                  onClick={() => addSubBlock("ordered-list")}
+                />
+                <AddBlockButton
+                  icon={<MdImage size={40} />}
+                  label="Image"
+                  onClick={() => addSubBlock("image")}
+                />
+                <AddBlockButton
+                  icon={<MdCode size={40} />}
+                  label="Code"
+                  onClick={() => addSubBlock("code-block")}
+                />
+              </div>
+            )}
+
+            {/* Debug information - can be removed in production */}
+            <div className="mt-12 p-4 bg-gray-100 rounded-lg">
+              <details>
+                <summary className="cursor-pointer text-sm text-theme-primary/70">
+                  Debug: Current Note Structure
+                </summary>
+                <pre className="mt-2 p-2 bg-gray-200 rounded text-xs overflow-auto">
+                  {JSON.stringify(block, null, 2)}
+                </pre>
+              </details>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
