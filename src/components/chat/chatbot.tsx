@@ -16,7 +16,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ComponentPropsWithoutRef } from "react";
 import Image from "next/image";
-import AI_image from "../../../public/ai_tutor.png";
+import AI_image from "@/utils/media/ai_tutor.png";
 
 interface ChatMessage {
   id?: string;

@@ -22,7 +22,7 @@ import CodeBlock from "@/components/notes-ui/code-block";
 import AddBlockButton from "@/components/notes-ui/add-block-button";
 import Chatbot from "@/components/chat/chatbot";
 import { motion } from "framer-motion";
-import AI_image from "../../../../public/ai_tutor.png";
+import AI_image from "@/utils/media/ai_tutor.png";
 
 // Define types for our note structure
 type SubBlockType =
@@ -322,15 +322,19 @@ export default function NotePage() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 initial={{ x: 0 }}
-                animate={!isChatOpen ? {
-                  x: [0, -3, 3, -3, 0],
-                  transition: {
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    duration: 0.3,
-                    repeatDelay: 2,
-                  },
-                } : { x: 0 }}
+                animate={
+                  !isChatOpen
+                    ? {
+                        x: [0, -3, 3, -3, 0],
+                        transition: {
+                          repeat: Infinity,
+                          repeatType: "loop",
+                          duration: 0.3,
+                          repeatDelay: 2,
+                        },
+                      }
+                    : { x: 0 }
+                }
                 onClick={() => setIsChatOpen(true)}
               >
                 <Image

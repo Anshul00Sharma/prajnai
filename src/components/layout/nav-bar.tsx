@@ -89,7 +89,7 @@ export function NavBar() {
                   : "text-theme-light hover:bg-theme-secondary/20"
               }`}
             >
-              Subject
+              Uploads
             </Link>
             <Link
               href="/topic"
