@@ -4,7 +4,6 @@ import { SubjectTitlePopup } from "@/components/subject/subject-title-popup";
 import UploadCard from "@/components/subject/upload-card";
 import { useState, useEffect, useCallback } from "react";
 import { FaPlus, FaSync } from "react-icons/fa";
-import { useRouter } from "next/navigation";
 import { useSubject } from "@/contexts/subject-context";
 import { useUpload } from "@/contexts/upload-context";
 import { PreviousUploadCard } from "@/components/subject/previous-upload-card";
@@ -28,7 +27,6 @@ interface PreviousUpload {
 }
 
 export default function SubjectPage() {
-  const router = useRouter();
   const [showPopup, setShowPopup] = useState(false);
   const [subjectTitle, setSubjectTitle] = useState<string | undefined>("");
   const [nextId, setNextId] = useState(1);
@@ -39,22 +37,6 @@ export default function SubjectPage() {
   const [previousUploads, setPreviousUploads] = useState<PreviousUpload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  useEffect(() => {
-    const currentSubject = subjects.find(
-      (subject) => subject.id === currentSubjectId
-    );
-
-    if (!currentSubject?.name) {
-      setSubjectTitle("A new subject");
-      const timer = setTimeout(() => {
-        setShowPopup(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    } else {
-      setSubjectTitle(currentSubject.name);
-    }
-  }, [router, currentSubjectId, subjects]);
 
   // Fetch previous uploads
   const fetchUploads = useCallback(
@@ -76,6 +58,20 @@ export default function SubjectPage() {
       } catch (error) {
         console.error("Error fetching uploads:", error);
       } finally {
+        const currentSubject = subjects.find(
+          (subject) => subject.id === currentSubjectId
+        );
+
+        if (!currentSubject?.name) {
+          setSubjectTitle("A new subject");
+          const timer = setTimeout(() => {
+            setShowPopup(true);
+          }, 2000);
+          return () => clearTimeout(timer);
+        } else {
+          setSubjectTitle(currentSubject.name);
+        }
+
         setIsLoading(false);
         setIsRefreshing(false);
       }
@@ -205,8 +201,8 @@ export default function SubjectPage() {
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div 
-                  key={`loading-${index}`} 
+                <div
+                  key={`loading-${index}`}
                   className="bg-white rounded-xl shadow-lg p-6 animate-pulse"
                 >
                   <div className="flex items-start">
