@@ -2,75 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getUserId } from "@/utils/local-storage";
 import { motion } from "framer-motion";
-import { createContext, useContext } from "react";
-
-export interface CreditContextType {
-  credits: number | null;
-  isLoading: boolean;
-  fetchCredits: () => Promise<void>;
-  userId: string | null;
-}
-
-export const CreditContext = createContext<CreditContextType | null>(null);
-
-export function useCreditContext() {
-  const context = useContext(CreditContext);
-  if (!context) {
-    throw new Error("useCreditContext must be used within a CreditProvider");
-  }
-  return context;
-}
-
-export function CreditProvider({ children }: { children: React.ReactNode }) {
-  const [credits, setCredits] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  const fetchCredits = async () => {
-    if (!userId) return;
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/credit/${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCredits(data.credit);
-      } else {
-        console.error("Failed to fetch credits");
-      }
-    } catch (error) {
-      console.error("Error fetching credits:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const loadUserId = async () => {
-      const id = await getUserId();
-      setUserId(id);
-    };
-
-    loadUserId();
-  }, []);
-
-  useEffect(() => {
-    if (userId) {
-      fetchCredits();
-    }
-  }, [userId]);
-
-  return (
-    <CreditContext.Provider
-      value={{ credits, isLoading, fetchCredits, userId }}
-    >
-      {children}
-    </CreditContext.Provider>
-  );
-}
+import { useCreditContext } from "@/contexts/credit-context";
 
 export function NavBar() {
   const pathname = usePathname();

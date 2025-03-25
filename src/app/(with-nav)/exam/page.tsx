@@ -7,6 +7,8 @@ import { useSubject } from "@/contexts/subject-context";
 import { getUserId } from "@/utils/local-storage";
 import { Exam } from "@/types/exam";
 import { ExamCard } from "@/components/exam/exam-card";
+import { useCreditContext } from "@/contexts/credit-context";
+import { InsufficientCreditsPopup } from "@/components/ui/insufficient-credits-popup";
 
 export default function ExamPage() {
   const [showCreatePopup, setShowCreatePopup] = useState(false);
@@ -15,6 +17,28 @@ export default function ExamPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { currentSubjectId } = useSubject();
+  const { credits, fetchCredits } = useCreditContext();
+  const [showInsufficientCreditsPopup, setShowInsufficientCreditsPopup] = useState(false);
+  const REQUIRED_CREDITS = 15;
+
+  const checkCredits = () => {
+    // Make sure credits are updated
+    fetchCredits();
+    
+    // Check if user has enough credits
+    if (credits !== null && credits < REQUIRED_CREDITS) {
+      setShowInsufficientCreditsPopup(true);
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleCreateButton = () => {
+    if (checkCredits()) {
+      setShowCreatePopup(true);
+    }
+  };
 
   const handleCreateExam = async (
     selectedTopics: string[],
@@ -23,6 +47,11 @@ export default function ExamPage() {
     shortAnswerCount: number,
     additionalInfo: string
   ) => {
+    // Double-check credits before creating
+    if (!checkCredits()) {
+      return;
+    }
+
     try {
       setIsCreating(true);
 
@@ -126,6 +155,11 @@ export default function ExamPage() {
     fetchExams();
   }, [currentSubjectId]);
 
+  // Fetch credits when component mounts
+  useEffect(() => {
+    fetchCredits();
+  }, [fetchCredits]);
+
   return (
     <div className="p-6 mt-20">
       <div className="flex justify-between items-center mb-6">
@@ -141,7 +175,7 @@ export default function ExamPage() {
           </button>
         </div>
         <button
-          onClick={() => setShowCreatePopup(true)}
+          onClick={handleCreateButton}
           className="px-4 py-2 rounded-lg bg-theme-primary text-theme-light hover:bg-theme-primary/90 transition-colors flex items-center gap-2"
         >
           <FaPlus />
@@ -195,6 +229,15 @@ export default function ExamPage() {
           isUpdating={isCreating}
         />
       )}
+
+      {/* Insufficient Credits Popup */}
+      <InsufficientCreditsPopup
+        isOpen={showInsufficientCreditsPopup}
+        onClose={() => setShowInsufficientCreditsPopup(false)}
+        requiredCredits={REQUIRED_CREDITS}
+        currentCredits={credits}
+        resourceType="exam"
+      />
     </div>
   );
 }

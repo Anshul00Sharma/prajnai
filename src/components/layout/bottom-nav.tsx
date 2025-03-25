@@ -9,7 +9,7 @@ import { getUserId } from "@/utils/local-storage";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
-import { useCreditContext } from "./nav-bar";
+import { useCreditContext } from "@/contexts/credit-context";
 
 export function BottomNav() {
   const { subjects, setSubjects, setCurrentSubjectId, currentSubjectId } =
@@ -87,11 +87,11 @@ export function BottomNav() {
     try {
       // Sign out from Supabase
       await supabase.auth.signOut();
-      
+
       // Clear any local state
       setSubjects([]);
       setCurrentSubjectId("");
-      
+
       // Redirect to login page
       router.push("/auth/login");
     } catch (error) {
@@ -112,7 +112,7 @@ export function BottomNav() {
             >
               <FaSignOutAlt />
             </button>
-            
+
             <button
               onClick={() => setShowSubjects(!showSubjects)}
               className="flex items-center gap-2 px-4 py-2 text-theme-primary font-medium rounded-lg hover:bg-theme-light transition-colors"
@@ -139,11 +139,11 @@ export function BottomNav() {
                 </svg>
               </motion.div>
             </button>
-            
+
             <div className="flex items-center md:hidden">
               <div className="flex items-center gap-1 text-theme-primary">
                 <span className="text-sm font-medium">
-                  {credits !== null ? credits : '...'}
+                  {credits !== null ? credits : "..."}
                 </span>
                 <button
                   onClick={fetchCredits}
@@ -162,7 +162,11 @@ export function BottomNav() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     animate={isLoading ? { rotate: 360 } : {}}
-                    transition={isLoading ? { repeat: Infinity, duration: 1, ease: "linear" } : {}}
+                    transition={
+                      isLoading
+                        ? { repeat: Infinity, duration: 1, ease: "linear" }
+                        : {}
+                    }
                   >
                     <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
                   </motion.svg>
@@ -254,7 +258,7 @@ export function BottomNav() {
           </>
         )}
       </AnimatePresence>
-      
+
       {/* Logout Confirmation Modal */}
       <ConfirmationModal
         isOpen={showLogoutModal}

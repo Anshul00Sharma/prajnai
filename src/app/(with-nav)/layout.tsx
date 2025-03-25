@@ -1,6 +1,7 @@
 "use client";
 
-import { NavBar, CreditProvider } from "@/components/layout/nav-bar";
+import { NavBar } from "@/components/layout/nav-bar";
+import { CreditProvider } from "@/contexts/credit-context";
 import { PageTransition } from "@/components/transitions/page-transition";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";

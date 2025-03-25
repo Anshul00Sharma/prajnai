@@ -6,6 +6,8 @@ import { FaSync, FaSpinner, FaCheck } from "react-icons/fa";
 import { TopicCreatePopup } from "@/components/topic/topic-create-popup";
 import { useSubject } from "@/contexts/subject-context";
 import { useRouter } from "next/navigation";
+import { useCreditContext } from "@/contexts/credit-context";
+import { InsufficientCreditsPopup } from "@/components/ui/insufficient-credits-popup";
 
 // Define the Topic interface based on the database schema
 interface Topic {
@@ -83,6 +85,7 @@ const TopicCard = ({ topic }: { topic: Topic }) => {
 
 export default function TopicPage() {
   const { currentSubjectId } = useSubject();
+  const { credits, fetchCredits, userId } = useCreditContext();
 
   const [topics, setTopics] = useState<Topic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,6 +93,8 @@ export default function TopicPage() {
   const [showCreatePopup, setShowCreatePopup] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showInsufficientCreditsPopup, setShowInsufficientCreditsPopup] = useState(false);
+  const REQUIRED_CREDITS = 5;
 
   useEffect(() => {
     if (currentSubjectId) {
@@ -99,6 +104,11 @@ export default function TopicPage() {
       setError("No subject selected");
     }
   }, [currentSubjectId]);
+
+  useEffect(() => {
+    // Fetch credits when component loads
+    fetchCredits();
+  }, [fetchCredits]);
 
   const fetchTopics = async (showRefreshAnimation = false) => {
     if (!currentSubjectId) return;
@@ -125,8 +135,32 @@ export default function TopicPage() {
     }
   };
 
+  const checkCredits = () => {
+    // Make sure credits are updated
+    fetchCredits();
+    
+    // Check if user has enough credits
+    if (credits !== null && credits < REQUIRED_CREDITS) {
+      setShowInsufficientCreditsPopup(true);
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleCreateButton = () => {
+    if (checkCredits()) {
+      setShowCreatePopup(true);
+    }
+  };
+
   const handleCreateTopic = async (title: string, additionalInfo: string) => {
-    if (!currentSubjectId) return;
+    if (!currentSubjectId || !userId) return;
+    
+    // Double-check credits before creating
+    if (!checkCredits()) {
+      return;
+    }
 
     try {
       setIsCreating(true);
@@ -193,7 +227,7 @@ export default function TopicPage() {
             </button>
           </div>
           <button
-            onClick={() => setShowCreatePopup(true)}
+            onClick={handleCreateButton}
             className="px-4 py-2 rounded-lg bg-theme-primary text-theme-light hover:bg-theme-primary/90 transition-colors"
             disabled={!currentSubjectId}
           >
@@ -204,8 +238,8 @@ export default function TopicPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div 
-                key={`loading-${index}`} 
+              <div
+                key={`loading-${index}`}
                 className="bg-white rounded-xl shadow-lg p-6 animate-pulse"
               >
                 <div className="flex items-start">
@@ -249,6 +283,13 @@ export default function TopicPage() {
             isUpdating={isCreating}
           />
         )}
+
+        <InsufficientCreditsPopup
+          isOpen={showInsufficientCreditsPopup}
+          onClose={() => setShowInsufficientCreditsPopup(false)}
+          requiredCredits={REQUIRED_CREDITS}
+          currentCredits={credits}
+        />
       </div>
     </>
   );
