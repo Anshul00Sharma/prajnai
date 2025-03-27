@@ -62,7 +62,7 @@ interface SubBlock {
   content: SubBlockContent; // Typed based on the type of sub-block
 }
 
-interface Block {
+export interface Block {
   id: string;
   heading: string;
   subBlocks: SubBlock[];
@@ -86,11 +86,12 @@ export default function NotePage() {
     ],
   });
 
+  // State for loading, error, editing
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Add editing mode state
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<boolean | null>(null);
 
   // Chatbot state
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -127,6 +128,41 @@ export default function NotePage() {
       fetchNoteData();
     }
   }, [topicId]);
+
+  // Function to save note data to the API
+  const saveNote = async () => {
+    try {
+      setIsSaving(true);
+      setSaveSuccess(null);
+
+      const response = await fetch(`/api/topic/${topicId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ note: block }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save note");
+      }
+
+      // Note saved successfully
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(null), 3000); // Clear success message after 3 seconds
+
+      // Exit editing mode
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error saving note:", err);
+      setError(err instanceof Error ? err.message : "Failed to save note");
+      setSaveSuccess(false);
+      // Keep editing mode active so user can try again
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Function to update the block heading
   const updateBlockHeading = (newHeading: string) => {
@@ -220,7 +256,9 @@ export default function NotePage() {
         return (
           <Paragraph
             id={subBlock.id}
+            block={block}
             initialContent={subBlock.content as string}
+            title={subBlock.heading}
             isEditing={isEditing}
             onContentChange={
               isEditing
@@ -232,6 +270,8 @@ export default function NotePage() {
       case "unordered-list":
         return (
           <UnorderedList
+            block={block}
+            title={subBlock.heading}
             id={subBlock.id}
             initialItems={subBlock.content as ListItem[]}
             isEditing={isEditing}
@@ -245,6 +285,7 @@ export default function NotePage() {
       case "ordered-list":
         return (
           <OrderedList
+            block={block}
             id={subBlock.id}
             initialItems={subBlock.content as ListItem[]}
             isEditing={isEditing}
@@ -272,6 +313,8 @@ export default function NotePage() {
       case "code-block":
         return (
           <CodeBlock
+            block={block}
+            title={subBlock.heading}
             id={subBlock.id}
             initialCode={(subBlock.content as CodeContent).code}
             initialLanguage={(subBlock.content as CodeContent).language}
@@ -298,14 +341,27 @@ export default function NotePage() {
             {loading ? "Loading Note..." : block.heading}
           </h1>
           <div className="flex items-center gap-4">
+            {/* Show success/error feedback */}
+            {saveSuccess === true && (
+              <span className="text-green-600 text-sm">Note saved!</span>
+            )}
+            {saveSuccess === false && (
+              <span className="text-red-600 text-sm">Failed to save</span>
+            )}
+
             <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-theme-primary text-white rounded-lg hover:bg-theme-primary/90 transition-colors"
+              onClick={isEditing ? saveNote : () => setIsEditing(true)}
+              disabled={isSaving}
+              className={`flex items-center gap-2 px-3 py-1.5 ${
+                isSaving
+                  ? "bg-gray-400"
+                  : "bg-theme-primary hover:bg-theme-primary/90"
+              } text-white rounded-lg transition-colors`}
             >
               {isEditing ? (
                 <>
                   <FaSave className="mr-1" size={16} />
-                  Save
+                  {isSaving ? "Saving..." : "Save"}
                 </>
               ) : (
                 <>
